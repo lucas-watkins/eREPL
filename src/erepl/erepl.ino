@@ -2,25 +2,31 @@
 
 void setup() {
   Serial.begin(constants::baudRate); 
-  while (!Serial) {}
+  
+  while (!Serial) {
+    delay(10); 
+  }
   Serial.flush(); 
 }
 
 
 void loop() {
   Serial.print(constants::shellPrompt);
+  String input;
+  
   while (true)
-  {
-    String input; 
+  { 
+
     if (Serial.available() > 0){ 
       char character {Serial.read()};
       if (character == '\n' || character == '\r'){
         Serial.println(""); 
-        Serial.println("Run Command!");
+        runCommand(input);
         break; 
       }
       else {
         Serial.print(character);
+        input += character;
       }
     }
     delay(10); 
