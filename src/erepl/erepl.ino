@@ -24,6 +24,9 @@ void loop() {
         runCommand(input);
         break; 
       }
+      else if (character == 12){
+        input = input.substring(0, input.length() - 1)
+      }
       else {
         Serial.print(character);
         input += character;
