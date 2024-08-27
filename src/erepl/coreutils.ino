@@ -1,5 +1,6 @@
 #include "erepl.h"
 #include <ESP8266WiFi.h>
+#define DEBUG
 
 void runCommand(String full){
   String command {full.substring(0, full.indexOf(' '))};
