@@ -11,13 +11,20 @@ static String httpGet(const String url, const bool interactive = false){
     const int httpCode {http.GET()}; 
 
     if (interactive){
-      Serial.println("HTTP Code: " + static_cast<String>(httpCode) + (http.errorToString(httpCode) == "" ? "" : " (" + http.errorToString(httpCode) + ")"));
-      Serial.println(""); 
+      const String httpErrorString {http.errorToString(httpCode)}; 
+      Serial.println("HTTP Code: " + static_cast<String>(httpCode) + (httpErrorString == "" ? "" : " (" + httpErrorString + ")"));
+      if (httpErrorString == ""){
+        Serial.println(""); 
+      }
     }
 
     return http.getString(); 
 
-  } else {
+  } else if (!url.startsWith("http://")){
+    Serial.println("Error: URL must start with \"http://\"");
+    return ""; 
+  } 
+  else {
     Serial.println("Error: unable to reach " + url); 
     return "";
   }
