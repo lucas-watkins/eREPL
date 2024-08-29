@@ -1,7 +1,7 @@
-#include "erepl.h"
+#include "config.h"
 
 void setup() {
-  Serial.begin(constants::baudRate); 
+  Serial.begin(config::baudRate); 
   
   while (!Serial) {
     delay(10); 
@@ -11,13 +11,13 @@ void setup() {
 
 
 void loop() {
-  Serial.print(constants::shellPrompt);
+  Serial.print(config::shellPrompt);
   String input;
   
   while (true)
   { 
     if (Serial.available() > 0){ 
-      char character {Serial.read()};
+      const char character {Serial.read()};
       if (character == '\n' || character == '\r'){
         Serial.println(""); 
         runCommand(input);
@@ -31,12 +31,12 @@ void loop() {
           // move back to column 0
           Serial.print("\033[50D");
 
-          for (unsigned int i {0}; i < input.length() + constants::shellPrompt.length() + 1u; i++){
+          for (unsigned int i {0}; i < input.length() + config::shellPrompt.length() + 1u; i++){
             Serial.print(" ");
           }
 
           Serial.print("\033[50D");
-          Serial.print(constants::shellPrompt + input);
+          Serial.print(config::shellPrompt + input);
         }
       }
       else {

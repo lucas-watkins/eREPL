@@ -1,10 +1,31 @@
-#include "erepl.h"
+#include "config.h"
 #include <ESP8266WiFi.h>
-#define DEBUG
+#include <ESP8266HTTPClient.h>
 
-void runCommand(String full){
-  String command {full.substring(0, full.indexOf(' '))};
-  String args {full.substring(full.indexOf(' ') + 1, full.length())}; 
+static String httpGet(const String url, const bool interactive = false){
+  if (WiFi.status() == WL_CONNECTED && url.startsWith("http://")){
+    WiFiClient client;
+    HTTPClient http; 
+
+    http.begin(client, url); 
+    const int httpCode {http.GET()}; 
+
+    if (interactive){
+      Serial.println("HTTP Code: " + static_cast<String>(httpCode) + (http.errorToString(httpCode) == "" ? "" : " (" + http.errorToString(httpCode) + ")"));
+      Serial.println(""); 
+    }
+
+    return http.getString(); 
+
+  } else {
+    Serial.println("Error: unable to reach " + url); 
+    return "";
+  }
+}
+
+void runCommand(const String full){
+  const String command {full.substring(0, full.indexOf(' '))};
+  const String args {full.substring(full.indexOf(' ') + 1, full.length())}; 
   
   #ifdef DEBUG
   Serial.print("Command: ");
@@ -28,18 +49,21 @@ void runCommand(String full){
   else if (command == "clear"){
     clear();
   }
+  else if (command == "get"){
+    Serial.println(httpGet(args, true)); 
+  }
   else if (command != ""){
     Serial.println("Command Not Found!");
   }
 }
 
 // echos string back
-void echo(String args) {
+static void echo(String args) {
   Serial.println(args);  
 }
 
 // connect to wifi
-void connect(String args){
+static void connect(const String args){
 
   #ifdef DEBUG
   Serial.print("Network Name: ");
@@ -50,7 +74,7 @@ void connect(String args){
 
   WiFi.begin(args.substring(0, args.indexOf(' ')), args.substring(args.indexOf(' ') + 1, args.length())); 
   
-  Serial.println("Connecting");
+  Serial.print("Connecting ");
 
   // 30 seconds to connect
   unsigned long targetTime {millis() + 30000L}; 
@@ -60,17 +84,17 @@ void connect(String args){
   }
 
   if (WiFi.status() == WL_CONNECTED){
-    Serial.println("Connected!"); 
+    Serial.print(" Connected! ");
+    Serial.println(" (" + WiFi.localIP().toString() + ')'); 
   }
 
-  ip(); 
 }
 
-void ip(){
+static void ip(){
   Serial.println(WiFi.localIP()); 
 }
 
-void reboot(){
+static void reboot(){
   Serial.end();
   // enable and disable watchdog on chip and stall to reboot  
   wdt_disable();
@@ -78,6 +102,7 @@ void reboot(){
   while (true){}
 }
 
-void clear(){
+static void clear(){
   Serial.print("\x1b[2J\x1b[H");
 }
+
